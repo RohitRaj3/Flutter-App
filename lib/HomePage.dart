@@ -1,23 +1,47 @@
 // import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:firebase_database/firebase_database.dart';
+// import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 class MyHomePage extends StatefulWidget{
+  const MyHomePage({super.key});
+
 
   @override
+  // ignore: library_private_types_in_public_api
   _MyHomePageState createState() => _MyHomePageState();
 }
 
 List myColors = <Color>[
-  Colors.red,
+  Colors.blue,
   Colors.yellow,
   Colors.brown,
-  Colors.blue,
+  Colors.red,
   Colors.deepOrangeAccent,
-  Colors.pink,
-];
-Color primaryColor = myColors[4];
+  // Colors.pink,
+].reversed.toList();
+Color primaryColor = myColors[0];
+
 
 class _MyHomePageState extends State<MyHomePage> {
+
+  //for real time data base
+  final colorReference = FirebaseDatabase.instance.ref().child('colors');
+
+  //for cloud_firebase
+  // late CollectionReference colorCollection;
+  // late Stream<QuerySnapshot> colorStream;
+  //
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   colorCollection = FirebaseFirestore.instance.collection('colors');
+  //   colorStream = colorCollection.orderBy('timestamp', descending: true).snapshots();
+  // }
+
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,11 +55,13 @@ class _MyHomePageState extends State<MyHomePage> {
             buildImage(),
             buildColorIcons(),
             buildAmountTag(),
+            // buildColorList(), // Add the color list here
           ],
         ),
       ),
     );
   }
+
 
   Widget navbar() => const Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -68,9 +94,9 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       );
 
-  Widget buildImage() => Container(
+  Widget buildImage() => SizedBox(
          width: MediaQuery.of(context).size.width,
-         // height: MediaQuery.of(context).size.height,
+         height: MediaQuery.of(context).size.height,
         child: ColorFiltered(
           colorFilter: ColorFilter.mode(primaryColor, BlendMode.hue),
           child: Container(
@@ -87,13 +113,12 @@ class _MyHomePageState extends State<MyHomePage> {
         );
 
 
-
   Widget buildColorIcons() =>
       Positioned(
         bottom: 35,
         right: 10,
         child: Column(
-          children: [for(var i = 0; i < 6; i++) buildIconBtn(myColors[i])],
+          children: [for(var i = 0; i <5; i++) buildIconBtn(myColors[i])],
         ),
       );
 
@@ -120,6 +145,17 @@ class _MyHomePageState extends State<MyHomePage> {
           setState(() {
             primaryColor = myColor;
           });
+          //this will store data in cloud_firebase as json.
+          // FirebaseFirestore.instance.collection('colors').add({
+          //   'color': myColor.toString(), // Store color as a string
+          //   'timestamp': FieldValue.serverTimestamp(),
+          // });
+
+         // Send data to Firebase Realtime Database
+          colorReference.push().set({
+            'color': myColor.toString(), // Store color as a string
+            // 'timestamp': ServerValue.timestamp,
+          });
         },
       ),
     ],
@@ -140,4 +176,8 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ),
       );
+
+
+
+
 }
